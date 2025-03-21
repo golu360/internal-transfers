@@ -33,6 +33,15 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
+	app.Get(endpoints.GET_ACCOUNT, func(c *fiber.Ctx) error {
+		accountId := c.Params("accountId")
+		response, err := account_service.GetAccount(accountId)
+		if err != nil {
+			return err
+		}
+		return c.Status(200).JSON(response)
+	})
+
 	app.Post(endpoints.CREATE_ACCOUNT, func(c *fiber.Ctx) error {
 		body := new(dtos.CreateAccountDto)
 		if err := c.BodyParser(body); err != nil {
