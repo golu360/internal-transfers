@@ -1,8 +1,10 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -22,4 +24,9 @@ func GetDb() (*gorm.DB, error) {
 func Close(db *gorm.DB) {
 	d, _ := db.DB()
 	d.Close()
+}
+
+func IsDuplicateKeyError(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
 }

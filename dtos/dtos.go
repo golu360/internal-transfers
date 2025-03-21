@@ -5,6 +5,12 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type Response struct {
+	Status  int         `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data"`
+}
+
 type CreateAccountDto struct {
 	AccountId uuid.UUID       `json:"account_id"`
 	Balance   decimal.Decimal `json:"initial_balance"`
