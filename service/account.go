@@ -58,17 +58,19 @@ func TransferFunds(body *dtos.CreateTransactionDto) error {
 		zap.L().Error("insufficient balance in source acccount")
 		return fiber.NewError(fiber.ErrBadRequest.Code, "Insufficient Balance")
 	}
-	destinationAccount, err := account_repository.GetAccount(body.SourceAccountId.String())
+
+	// fetch destination account
+	_, err = account_repository.GetAccount(body.DestinationAccountId.String())
 	if err != nil {
-		zap.L().Error("Error fetching destination account", zap.Error(err), zap.String("sourceAccountId", body.DestinationAccountId.String()))
+		zap.L().Error("Error fetching destination account", zap.Error(err), zap.String("destinationAccountId", body.DestinationAccountId.String()))
 		return err
 	}
 	db.Transaction(func(tx *gorm.DB) error {
-		if err = account_repository.DebitFunds(sourceAccount.AccountId.String(), body.Amount); err != nil {
+		if err = account_repository.DebitFunds(body.SourceAccountId.String(), body.Amount); err != nil {
 			return err
 		}
 
-		if err = account_repository.CreditFunds(destinationAccount.AccountId.String(), body.Amount); err != nil {
+		if err = account_repository.CreditFunds(body.DestinationAccountId.String(), body.Amount); err != nil {
 			return err
 		}
 		return nil
