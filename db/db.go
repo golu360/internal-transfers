@@ -18,7 +18,9 @@ func GetDb() (*gorm.DB, error) {
 	dbPort := viper.GetString("db.port")
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPassword, dbName, dbPort)
-	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	return gorm.Open(postgres.Open(dsn), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
 }
 
 func Close(db *gorm.DB) {

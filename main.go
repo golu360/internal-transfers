@@ -53,5 +53,16 @@ func main() {
 		return c.SendStatus(201)
 	})
 
+	app.Post(endpoints.TRANSFER, func(c *fiber.Ctx) error {
+		body := new(dtos.CreateTransactionDto)
+		if err := c.BodyParser(body); err != nil {
+			return fiber.ErrInternalServerError
+		}
+		if err := account_service.TransferFunds(body); err != nil {
+			return err
+		}
+		return c.SendStatus(201)
+	})
+
 	app.Listen(":" + viper.GetString("app.port"))
 }

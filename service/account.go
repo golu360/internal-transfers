@@ -1,12 +1,11 @@
 package account_service
 
 import (
-	"errors"
-
 	"github.com/gofiber/fiber/v2"
 	database "github.com/golu360/internal-transfers/db"
 	"github.com/golu360/internal-transfers/db/models"
 	"github.com/golu360/internal-transfers/dtos"
+	account_repository "github.com/golu360/internal-transfers/repository"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -34,22 +33,46 @@ func CreateAccount(body *dtos.CreateAccountDto) error {
 }
 
 func GetAccount(accountId string) (*dtos.GetAccountResponseDto, error) {
-	db, err := database.GetDb()
+	account, err := account_repository.GetAccount(accountId)
 	if err != nil {
-		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("accountId", accountId))
-		return nil, fiber.ErrInternalServerError
-	}
-	account := new(models.Account)
-	err = db.First(&account, "account_id = ?", accountId).Select("account_id", "balance").Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fiber.ErrNotFound
-		}
-		return nil, fiber.ErrInternalServerError
+		return nil, err
 	}
 	return &dtos.GetAccountResponseDto{
 		AccountId: account.AccountId,
 		Balance:   account.Balance,
 	}, nil
+}
 
+func TransferFunds(body *dtos.CreateTransactionDto) error {
+	db, err := database.GetDb()
+	if err != nil {
+		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("body", body))
+		return fiber.ErrInternalServerError
+	}
+	sourceAccount, err := account_repository.GetAccount(body.SourceAccountId.String())
+	if err != nil {
+		zap.L().Error("Error fetching source account", zap.Error(err), zap.String("sourceAccountId", body.SourceAccountId.String()))
+		return err
+	}
+	if sourceAccount.Balance.Cmp(body.Amount) == -1 { // check if enough balance in account
+		zap.L().Error("insufficient balance in source acccount")
+		return fiber.NewError(fiber.ErrBadRequest.Code, "Insufficient Balance")
+	}
+	destinationAccount, err := account_repository.GetAccount(body.SourceAccountId.String())
+	if err != nil {
+		zap.L().Error("Error fetching destination account", zap.Error(err), zap.String("sourceAccountId", body.DestinationAccountId.String()))
+		return err
+	}
+	db.Transaction(func(tx *gorm.DB) error {
+		if err = account_repository.DebitFunds(sourceAccount.AccountId.String(), body.Amount); err != nil {
+			return err
+		}
+
+		if err = account_repository.CreditFunds(destinationAccount.AccountId.String(), body.Amount); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return nil
 }
