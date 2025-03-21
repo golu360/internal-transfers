@@ -7,6 +7,7 @@ import (
 	"github.com/golu360/internal-transfers/db/models"
 	"github.com/golu360/internal-transfers/dtos"
 	account_service "github.com/golu360/internal-transfers/service"
+	"github.com/golu360/internal-transfers/utils"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 )
@@ -47,6 +48,9 @@ func main() {
 		if err := c.BodyParser(body); err != nil {
 			return fiber.ErrInternalServerError
 		}
+		if validation_err := utils.ValidateStruct(body); len(validation_err) > 0 {
+			return c.Status(400).JSON(validation_err)
+		}
 		if err := account_service.CreateAccount(body); err != nil {
 			return err
 		}
@@ -57,6 +61,9 @@ func main() {
 		body := new(dtos.CreateTransactionDto)
 		if err := c.BodyParser(body); err != nil {
 			return fiber.ErrInternalServerError
+		}
+		if validation_err := utils.ValidateStruct(body); len(validation_err) > 0 {
+			return c.Status(400).JSON(validation_err)
 		}
 		if err := account_service.TransferFunds(body); err != nil {
 			return err

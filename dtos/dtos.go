@@ -5,6 +5,12 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type ErrorResponse struct {
+	FailedField string
+	Tag         string
+	Value       string
+}
+
 type Response struct {
 	Status  int         `json:"status"`
 	Message string      `json:"message"`
@@ -12,8 +18,8 @@ type Response struct {
 }
 
 type CreateAccountDto struct {
-	AccountId uuid.UUID       `json:"account_id"`
-	Balance   decimal.Decimal `json:"initial_balance"`
+	AccountId uuid.UUID       `json:"account_id" validate:"required,uuid4"`
+	Balance   decimal.Decimal `json:"initial_balance" validate:"required"`
 }
 
 type GetAccountResponseDto struct {
@@ -22,7 +28,7 @@ type GetAccountResponseDto struct {
 }
 
 type CreateTransactionDto struct {
-	SourceAccountId      uuid.UUID       `json:"source_account_id"`
-	DestinationAccountId uuid.UUID       `json:"destination_account_id"`
-	Amount               decimal.Decimal `json:"amount"`
+	SourceAccountId      uuid.UUID       `json:"source_account_id" validate:"required,uuid4"`
+	DestinationAccountId uuid.UUID       `json:"destination_account_id" validate:"required,uuid4"`
+	Amount               decimal.Decimal `json:"amount" validate:"required"`
 }
