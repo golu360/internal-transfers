@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"fmt"
@@ -17,4 +17,9 @@ func GetDb() (*gorm.DB, error) {
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", dbHost, dbUser, dbPassword, dbName, dbPort)
 	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+}
+
+func Close(db *gorm.DB) {
+	d, _ := db.DB()
+	d.Close()
 }

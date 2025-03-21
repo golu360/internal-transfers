@@ -1,7 +1,9 @@
 package main
 
 import (
-	"github.com/golu360/internal-transfers/db"
+	"github.com/gofiber/fiber/v2"
+	endpoints "github.com/golu360/internal-transfers/constants"
+	database "github.com/golu360/internal-transfers/db"
 	"github.com/golu360/internal-transfers/db/models"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
@@ -13,13 +15,21 @@ func init() {
 	viper.SetConfigType("yaml")
 	viper.ReadInConfig()
 	zap.ReplaceGlobals(zap.Must(zap.NewDevelopment()))
-	db, err := db.GetDb()
+	db, err := database.GetDb()
 	if err != nil {
 		zap.L().Panic("Error occurred while trying to auto migrate", zap.Error(err))
 	}
 	zap.L().Debug("Migrating accounts schema")
 	db.AutoMigrate(&models.Account{})
+	database.Close(db)
 }
 
 func main() {
+	app := fiber.New()
+
+	app.Get(endpoints.HEALTH_CHECK, func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
+
+	app.Listen(":" + viper.GetString("app.port"))
 }
