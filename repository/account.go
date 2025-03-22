@@ -1,4 +1,4 @@
-package account_repository
+package repository
 
 import (
 	"errors"

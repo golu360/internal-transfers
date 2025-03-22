@@ -22,8 +22,8 @@ func init() {
 	if err != nil {
 		zap.L().Panic("Error occurred while trying to auto migrate", zap.Error(err))
 	}
-	zap.L().Debug("Migrating accounts schema")
-	db.AutoMigrate(&models.Account{})
+	zap.L().Debug("Migratingschema")
+	db.AutoMigrate(&models.Account{}, &models.Transaction{})
 	database.Close(db)
 }
 
