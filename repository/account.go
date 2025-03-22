@@ -6,11 +6,33 @@ import (
 	"github.com/gofiber/fiber/v2"
 	database "github.com/golu360/internal-transfers/db"
 	"github.com/golu360/internal-transfers/db/models"
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
+
+func CreateAccount(accountId uuid.UUID, balance decimal.Decimal) error {
+	db, err := database.GetDb()
+	if err != nil {
+		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("accountId", accountId))
+		return fiber.ErrInternalServerError
+	}
+	account := &models.Account{
+		AccountId: accountId,
+		Balance:   balance,
+	}
+	result := db.Create(account)
+	if err := result.Error; err != nil {
+		zap.L().Error("Error occurred while trying to insert account record", zap.Error(err))
+		if database.IsDuplicateKeyError(err) {
+			return fiber.ErrConflict
+		}
+		return fiber.ErrInternalServerError
+	}
+	return nil
+}
 
 func GetAccount(accountId string) (*models.Account, error) {
 	db, err := database.GetDb()
