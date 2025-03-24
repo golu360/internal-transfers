@@ -6,14 +6,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 	database "github.com/golu360/internal-transfers/db"
 	"github.com/golu360/internal-transfers/db/models"
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-func CreateAccount(accountId uuid.UUID, balance decimal.Decimal) error {
+func CreateAccount(accountId int64, balance decimal.Decimal) error {
 	db, err := database.GetDb()
 	if err != nil {
 		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("accountId", accountId))
@@ -34,7 +33,7 @@ func CreateAccount(accountId uuid.UUID, balance decimal.Decimal) error {
 	return nil
 }
 
-func GetAccount(accountId string) (*models.Account, error) {
+func GetAccount(accountId int64) (*models.Account, error) {
 	db, err := database.GetDb()
 	if err != nil {
 		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("accountId", accountId))
@@ -51,7 +50,7 @@ func GetAccount(accountId string) (*models.Account, error) {
 	return account, nil
 }
 
-func DebitFunds(accountId string, amount decimal.Decimal) error {
+func DebitFunds(accountId int64, amount decimal.Decimal) error {
 	db, err := database.GetDb()
 	if err != nil {
 		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("accountId", accountId))
@@ -66,7 +65,7 @@ func DebitFunds(accountId string, amount decimal.Decimal) error {
 	return results.Error
 }
 
-func CreditFunds(accountId string, amount decimal.Decimal) error {
+func CreditFunds(accountId int64, amount decimal.Decimal) error {
 	db, err := database.GetDb()
 	if err != nil {
 		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("accountId", accountId))

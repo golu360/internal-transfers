@@ -35,8 +35,11 @@ func main() {
 	})
 
 	app.Get(endpoints.GET_ACCOUNT, func(c *fiber.Ctx) error {
-		accountId := c.Params("accountId")
-		response, err := account_service.GetAccount(accountId)
+		accountId, err := c.ParamsInt("accountId")
+		if err != nil {
+			return fiber.NewError(400, "Invalid type for accountId")
+		}
+		response, err := account_service.GetAccount(int64(accountId))
 		if err != nil {
 			return err
 		}
@@ -46,6 +49,7 @@ func main() {
 	app.Post(endpoints.CREATE_ACCOUNT, func(c *fiber.Ctx) error {
 		body := new(dtos.CreateAccountDto)
 		if err := c.BodyParser(body); err != nil {
+			zap.L().Error("Error occurred while parsing body", zap.Error(err))
 			return fiber.ErrInternalServerError
 		}
 		if validation_err := utils.ValidateStruct(body); len(validation_err) > 0 {
@@ -60,6 +64,7 @@ func main() {
 	app.Post(endpoints.TRANSFER, func(c *fiber.Ctx) error {
 		body := new(dtos.CreateTransactionDto)
 		if err := c.BodyParser(body); err != nil {
+			zap.L().Error("Error occurred while parsing body", zap.Error(err))
 			return fiber.ErrInternalServerError
 		}
 		if validation_err := utils.ValidateStruct(body); len(validation_err) > 0 {

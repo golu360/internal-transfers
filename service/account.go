@@ -13,7 +13,7 @@ func CreateAccount(body *dtos.CreateAccountDto) error {
 	return repository.CreateAccount(body.AccountId, body.Balance)
 }
 
-func GetAccount(accountId string) (*dtos.GetAccountResponseDto, error) {
+func GetAccount(accountId int64) (*dtos.GetAccountResponseDto, error) {
 	account, err := repository.GetAccount(accountId)
 	if err != nil {
 		return nil, err
@@ -30,9 +30,9 @@ func TransferFunds(body *dtos.CreateTransactionDto) error {
 		zap.L().Error("Could not connect to db", zap.Error(err), zap.Any("body", body))
 		return fiber.ErrInternalServerError
 	}
-	sourceAccount, err := repository.GetAccount(body.SourceAccountId.String())
+	sourceAccount, err := repository.GetAccount(body.SourceAccountId)
 	if err != nil {
-		zap.L().Error("Error fetching source account", zap.Error(err), zap.String("sourceAccountId", body.SourceAccountId.String()))
+		zap.L().Error("Error fetching source account", zap.Error(err), zap.Int64("sourceAccountId", body.SourceAccountId))
 		return err
 	}
 	if sourceAccount.Balance.Cmp(body.Amount) == -1 { // check if enough balance in account
@@ -41,20 +41,20 @@ func TransferFunds(body *dtos.CreateTransactionDto) error {
 	}
 
 	// fetch destination account
-	_, err = repository.GetAccount(body.DestinationAccountId.String())
+	_, err = repository.GetAccount(body.DestinationAccountId)
 	if err != nil {
-		zap.L().Error("Error fetching destination account", zap.Error(err), zap.String("destinationAccountId", body.DestinationAccountId.String()))
+		zap.L().Error("Error fetching destination account", zap.Error(err), zap.Int64("destinationAccountId", body.DestinationAccountId))
 		return err
 	}
 	db.Transaction(func(tx *gorm.DB) error {
 		if err = repository.CreateTransaction(body.SourceAccountId, body.DestinationAccountId, body.Amount); err != nil {
 			return err
 		}
-		if err = repository.DebitFunds(body.SourceAccountId.String(), body.Amount); err != nil {
+		if err = repository.DebitFunds(body.SourceAccountId, body.Amount); err != nil {
 			return err
 		}
 
-		if err = repository.CreditFunds(body.DestinationAccountId.String(), body.Amount); err != nil {
+		if err = repository.CreditFunds(body.DestinationAccountId, body.Amount); err != nil {
 			return err
 		}
 		return nil

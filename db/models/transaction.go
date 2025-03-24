@@ -9,8 +9,8 @@ import (
 
 type Transaction struct {
 	TransactionId        uuid.UUID       `gorm:"type:uuid;index;primaryKey;not null" json:"transactionId"`
-	SourceAccountId      uuid.UUID       `gorm:"type:uuid;not null" json:"sourceAccountId"`
-	DestinationAccountId uuid.UUID       `gorm:"type:uuid;not null" json:"destinationAccountId"`
+	SourceAccountId      int64           `gorm:"not null" json:"sourceAccountId"`
+	DestinationAccountId int64           `gorm:"not null" json:"destinationAccountId"`
 	Amount               decimal.Decimal `gorm:"type:decimal(7,4);default:0.00" json:"amount"`
 	CreatedAt            time.Time
 	UpdatedAt            time.Time

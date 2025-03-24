@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func CreateTransaction(sourceAccountId uuid.UUID, destinationAccountId uuid.UUID, amount decimal.Decimal) error {
+func CreateTransaction(sourceAccountId int64, destinationAccountId int64, amount decimal.Decimal) error {
 	db, err := database.GetDb()
 	if err != nil {
 		zap.L().Error("Could not connect to db", zap.Error(err))

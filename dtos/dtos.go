@@ -1,7 +1,6 @@
 package dtos
 
 import (
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -12,23 +11,23 @@ type ErrorResponse struct {
 }
 
 type Response struct {
-	Status  int         `json:"status"`
+	Status  int64       `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 }
 
 type CreateAccountDto struct {
-	AccountId uuid.UUID       `json:"account_id" validate:"required,uuid4"`
+	AccountId int64           `json:"account_id" validate:"required,number"`
 	Balance   decimal.Decimal `json:"initial_balance" validate:"required"`
 }
 
 type GetAccountResponseDto struct {
-	AccountId uuid.UUID       `json:"account_id"`
+	AccountId int64           `json:"account_id"`
 	Balance   decimal.Decimal `json:"balance"`
 }
 
 type CreateTransactionDto struct {
-	SourceAccountId      uuid.UUID       `json:"source_account_id" validate:"required,uuid4"`
-	DestinationAccountId uuid.UUID       `json:"destination_account_id" validate:"required,uuid4"`
+	SourceAccountId      int64           `json:"source_account_id" validate:"required,number"`
+	DestinationAccountId int64           `json:"destination_account_id" validate:"required,number"`
 	Amount               decimal.Decimal `json:"amount" validate:"required"`
 }
